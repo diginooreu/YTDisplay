@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receiver Page</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling while in fullscreen mode */
+        }
+
+        #iframeContainer {
+            width: 100vw; /* Set to 100vw for full viewport width */
+            height: 100vh; /* Set to 100vh for full viewport height */
+            border: 0;
+        }
+
+        #fullscreenOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            display: none; /* Initially hide the overlay */
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 1000;
+            flex-direction: column;
+            opacity: 0.9;
+        }
+
+        #fullscreenOverlay h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #fullscreenButton {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #fullscreenButton:hover {
+            filter: brightness(90%);
+        }
+    </style>
+</head>
+<body>
+    <div id="fullscreenOverlay">
+        <h1>Drag me to the display</h1>
+        <button id="fullscreenButton" onclick="goFullscreen()">Allow Sound & Fullscreen</button>
+    </div>
+    <iframe src="standby.html" id="iframeContainer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <script defer>
+        const channel = new BroadcastChannel('iframeChannel');
+        const iframeContainer = document.getElementById('iframeContainer');
+        const fullscreenOverlay = document.getElementById('fullscreenOverlay');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+
+        // Check if the page is in fullscreen mode
+        if (!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)) {
+            fullscreenOverlay.style.display = 'flex'; // Show the overlay only if not in fullscreen
+        }
+
+        channel.onmessage = function (event) {
+            if (event.data.command === 'blankScreen') {
+                // Handle "Blank Screen" command
+                iframeContainer.src = 'standby.html';
+            } else {
+                // Assume it's a video ID
+                iframeContainer.src = "https://www.youtube.com/embed/" + event.data.url;
+            }
+        };
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function goFullscreen() {
+            if (iframeContainer.requestFullscreen) {
+                iframeContainer.requestFullscreen();
+            } else if (iframeContainer.webkitRequestFullscreen) {
+                iframeContainer.webkitRequestFullscreen();
+            } else if (iframeContainer.mozRequestFullScreen) {
+                iframeContainer.mozRequestFullScreen();
+            } else if (iframeContainer.msRequestFullscreen) {
+                iframeContainer.msRequestFullscreen();
+            }
+
+            fullscreenOverlay.style.display = 'none'; // Hide the overlay after entering fullscreen
+        }
+    </script>
+</body>
+</html>

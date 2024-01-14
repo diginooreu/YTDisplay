@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sender Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #send, #blankScreen, #opendisp {
+            background-color: #4caf50; /* Green color for other buttons */
+            color: white;
+        }
+
+        #toggleButton {
+            background-color: #5bc0de; /* Blue color for the first state */
+            color: white;
+        }
+
+        #toggleButton:hover {
+            filter: brightness(90%);
+        }
+
+        #toggleButton.active {
+            background-color: #d9534f; /* Red color for the second state */
+        }
+    </style>
+</head>
+<body>
+    <h2>YTDisplay</h2>
+    <label for="urlInput">Enter YouTube Video URL:</label>
+    <input type="text" id="urlInput">
+    <button id="send" onclick="sendMessage()">Send</button>
+    <button id="blankScreen" onclick="sendBlankScreen()">Blank Screen</button>
+    <button id="opendisp" onclick="window.open('projector.html', '_blank', 'width=600,height=400')">Open Display</button><br><br>
+
+
+    <label>Show Controls on Display:</label>
+    <button id="toggleButton" onclick="toggleButton()">Enable Controls</button>
+
+    <script>
+        const channel = new BroadcastChannel('iframeChannel');
+        let controlsShown = false; // Variable to store controls state
+
+        function extractVideoId(url) {
+            const match = url.match(/[?&]v=([^&]+)/);
+            return match ? match[1] : null;
+        }
+
+        function sendMessage() {
+            let videoId = "";
+            const urlInput = document.getElementById('urlInput').value;
+            if (controlsShown == true) {
+                videoId = extractVideoId(urlInput) + "?autoplay=1";
+            } else {
+                videoId = extractVideoId(urlInput) + "?autoplay=1&controls=0&disablekb=1";
+            }
+            
+
+            if (videoId) {
+                channel.postMessage({ url: videoId });
+            } else {
+                alert("Invalid YouTube Video URL. Please enter a valid URL.");
+            }
+        }
+
+        function sendBlankScreen() {
+            // Sending a specific value for "Blank Screen" command
+            channel.postMessage({ command: 'blankScreen' });
+        }
+
+        function toggleButton() {
+            const toggleButton = document.getElementById('toggleButton');
+            
+            // Toggle the controls state
+            controlsShown = !controlsShown;
+
+            // Update button appearance based on controls state
+            toggleButton.classList.toggle('active', controlsShown);
+            toggleButton.innerHTML = controlsShown ? 'Disable controls' : 'Enable controls';
+        }
+    </script>
+</body>
+</html>
